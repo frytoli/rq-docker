@@ -1,0 +1,31 @@
+version: '3'
+services:
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:latest
+
+  producer:
+    hostname: producer
+    build: ./app
+    command: python /home/producer.py
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    links:
+      - redis
+
+  worker:
+    hostname: consumer
+    build: ./app
+    command: /usr/bin/supervisord -n
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    links:
+      - redis
+    scale: 2
